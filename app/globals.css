@@ -1,26 +1,185 @@
+/* Google Fonts must come before all other imports */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ─── L&L Brand Tokens ──────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ll-black:   #010101;
+  --ll-grey:    #727070;
+  --ll-taupe:   #9c847a;
+  --ll-cream:   #ede8e4;
+  --ll-white:   #ffffff;
+  --ll-stone:   #867373;
+  --ll-sage:    #aba696;
+  --ll-khaki:   #c2ba9b;
+  --ll-ivory:   #dfdfcb;
+  --ll-olive:   #696348;
+  --ll-neutral: #d9d9d9;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* shadcn theme mapped to L&L */
+  --radius: 0.75rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.08 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.08 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.08 0 0);
+  --primary: oklch(0.08 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.935 0.007 50);        /* cream */
+  --secondary-foreground: oklch(0.08 0 0);
+  --muted: oklch(0.935 0.007 50);
+  --muted-foreground: oklch(0.48 0.004 0);   /* grey */
+  --accent: oklch(0.578 0.039 37);           /* taupe */
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.878 0 0);
+  --input: oklch(0.878 0 0);
+  --ring: oklch(0.578 0.039 37);             /* taupe ring */
+  --sidebar: oklch(0.08 0 0);               /* black sidebar */
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.578 0.039 37);  /* taupe active */
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.15 0 0);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.2 0 0);
+  --sidebar-ring: oklch(0.578 0.039 37);
 }
 
+.dark {
+  --background: oklch(0.13 0 0);
+  --foreground: oklch(0.935 0.007 50);
+  --card: oklch(0.17 0 0);
+  --card-foreground: oklch(0.935 0.007 50);
+  --popover: oklch(0.17 0 0);
+  --popover-foreground: oklch(0.935 0.007 50);
+  --primary: oklch(0.935 0.007 50);
+  --primary-foreground: oklch(0.08 0 0);
+  --secondary: oklch(0.22 0 0);
+  --secondary-foreground: oklch(0.935 0.007 50);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.68 0.015 50);
+  --accent: oklch(0.578 0.039 37);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.22 0 0);
+  --input: oklch(0.22 0 0);
+  --ring: oklch(0.578 0.039 37);
+}
+
+/* ─── Tailwind theme mapping ────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:                  var(--background);
+  --color-foreground:                  var(--foreground);
+  --color-card:                        var(--card);
+  --color-card-foreground:             var(--card-foreground);
+  --color-popover:                     var(--popover);
+  --color-popover-foreground:          var(--popover-foreground);
+  --color-primary:                     var(--primary);
+  --color-primary-foreground:          var(--primary-foreground);
+  --color-secondary:                   var(--secondary);
+  --color-secondary-foreground:        var(--secondary-foreground);
+  --color-muted:                       var(--muted);
+  --color-muted-foreground:            var(--muted-foreground);
+  --color-accent:                      var(--accent);
+  --color-accent-foreground:           var(--accent-foreground);
+  --color-destructive:                 var(--destructive);
+  --color-border:                      var(--border);
+  --color-input:                       var(--input);
+  --color-ring:                        var(--ring);
+  --color-sidebar:                     var(--sidebar);
+  --color-sidebar-foreground:          var(--sidebar-foreground);
+  --color-sidebar-primary:             var(--sidebar-primary);
+  --color-sidebar-primary-foreground:  var(--sidebar-primary-foreground);
+  --color-sidebar-accent:              var(--sidebar-accent);
+  --color-sidebar-accent-foreground:   var(--sidebar-accent-foreground);
+  --color-sidebar-border:              var(--sidebar-border);
+  --color-sidebar-ring:                var(--sidebar-ring);
+  --color-ll-black:   var(--ll-black);
+  --color-ll-grey:    var(--ll-grey);
+  --color-ll-taupe:   var(--ll-taupe);
+  --color-ll-cream:   var(--ll-cream);
+  --color-ll-sage:    var(--ll-sage);
+  --color-ll-khaki:   var(--ll-khaki);
+  --color-ll-olive:   var(--ll-olive);
+  --font-sans:        var(--font-body);
+  --font-display:     var(--font-display);
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─── Base styles ───────────────────────────────── */
+@layer base {
+  * { box-sizing: border-box; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─── Utilities ─────────────────────────────────── */
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+  .font-body    { font-family: var(--font-body); }
+
+  /* L&L brand horizontal rule */
+  .ll-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ll-taupe), transparent);
+    opacity: 0.4;
+    width: 100%;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  /* Apple-style portal card */
+  .portal-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--ll-neutral);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .portal-card:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--ll-neutral);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ll-taupe); }
 }
