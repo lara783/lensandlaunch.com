@@ -19,6 +19,9 @@ import {
   Compass,
   ListChecks,
   FileText,
+  Settings,
+  BarChart2,
+  ClipboardList,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -33,12 +36,15 @@ const clientNav: NavItem[] = [
   { label: "Dashboard",   href: "/dashboard",  icon: <LayoutDashboard size={18} /> },
   { label: "Proposals",   href: "/proposals",  icon: <FileText size={18} /> },
   { label: "Invoices",    href: "/invoices",   icon: <Receipt size={18} /> },
-  { label: "Timeline",    href: "/timeline",   icon: <CheckSquare size={18} /> },
+  { label: "Deliverables", href: "/deliverables", icon: <CheckSquare size={18} /> },
   { label: "Calendar",    href: "/calendar",   icon: <Calendar size={18} /> },
   { label: "Documents",   href: "/documents",  icon: <FolderOpen size={18} /> },
-  { label: "Brand Kit",   href: "/brand-kit",  icon: <Palette size={18} /> },
+  { label: "Brand Kit",   href: "/brand-kit",    icon: <Palette size={18} /> },
+  { label: "Brand Brief", href: "/brand-brief", icon: <ClipboardList size={18} /> },
+  { label: "Team",        href: "/team",        icon: <Users size={18} /> },
   { label: "Onboarding",  href: "/onboarding", icon: <Compass size={18} /> },
   { label: "Book a Call", href: "/schedule",   icon: <CalendarCheck size={18} /> },
+  { label: "Settings",    href: "/settings",   icon: <Settings size={18} /> },
 ];
 
 const adminNav: NavItem[] = [
@@ -47,18 +53,45 @@ const adminNav: NavItem[] = [
   { label: "Proposals",  href: "/admin/proposals/new",icon: <FilePlus size={18} /> },
   { label: "Services",   href: "/admin/services",     icon: <ListChecks size={18} /> },
   { label: "Calendar",   href: "/admin/calendar",     icon: <Calendar size={18} /> },
+  { label: "Team",       href: "/admin/team",         icon: <Users size={18} /> },
+  { label: "Settings",  href: "/admin/settings",     icon: <Settings size={18} /> },
+];
+
+const teamNav: NavItem[] = [
+  { label: "Dashboard", href: "/workspace",          icon: <LayoutDashboard size={18} /> },
+  { label: "Projects",  href: "/workspace/projects", icon: <FolderOpen size={18} /> },
+  { label: "Clients",   href: "/workspace/clients",  icon: <Users size={18} /> },
+  { label: "Calendar",  href: "/workspace/calendar", icon: <Calendar size={18} /> },
+  { label: "Settings",  href: "/workspace/settings", icon: <Settings size={18} /> },
 ];
 
 interface SidebarProps {
-  role: "client" | "admin";
+  role: "client" | "admin" | "team";
   userName: string;
+  analyticsEnabled?: boolean;
+  onboardingComplete?: boolean;
+  onboardingUnlocked?: boolean;
 }
 
-export function Sidebar({ role, userName }: SidebarProps) {
+export function Sidebar({ role, userName, analyticsEnabled, onboardingComplete, onboardingUnlocked = true }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
-  const nav = role === "admin" ? adminNav : clientNav;
+  const baseClientNav = (() => {
+    // Locked until Lara manually unlocks onboarding — only show Proposals + Book a Call
+    if (!onboardingUnlocked) {
+      return clientNav.filter((item) => item.href === "/proposals" || item.href === "/schedule");
+    }
+    let nav = [...clientNav];
+    if (analyticsEnabled) {
+      nav = [...nav.slice(0, 4), { label: "Analytics", href: "/analytics", icon: <BarChart2 size={18} /> }, ...nav.slice(4)];
+    }
+    if (onboardingComplete) {
+      nav = nav.filter((item) => item.href !== "/onboarding");
+    }
+    return nav;
+  })();
+  const nav = role === "admin" ? adminNav : role === "team" ? teamNav : baseClientNav;
 
   async function handleLogout() {
     const supabase = createClient();

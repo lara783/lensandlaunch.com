@@ -18,6 +18,7 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single();
 
+  if (profile?.role === "team") redirect("/workspace");
   if (profile?.role !== "admin") redirect("/dashboard");
 
   return (

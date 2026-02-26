@@ -6,13 +6,16 @@ export default async function AdminProposalPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: proposal } = await supabase
-    .from("proposals")
-    .select("*, profiles(full_name, email)")
-    .eq("id", id)
-    .single();
+  const [{ data: proposal }, { data: { user } }] = await Promise.all([
+    supabase.from("proposals").select("*, profiles(full_name, email)").eq("id", id).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!proposal) notFound();
+
+  const { data: adminProfile } = user
+    ? await supabase.from("profiles").select("full_name").eq("id", user.id).single()
+    : { data: null };
 
   return (
     <ProposalViewClient
@@ -20,6 +23,7 @@ export default async function AdminProposalPage({ params }: { params: Promise<{ 
       adminNav={{
         proposalId: id,
         canEdit: proposal.status === "draft" || proposal.status === "sent",
+        adminName: adminProfile?.full_name ?? "Admin",
       }}
     />
   );

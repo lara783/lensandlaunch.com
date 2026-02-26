@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 
 export default function NewClientButton() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", full_name: "", business_name: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   async function handleCreate(e: React.FormEvent) {
@@ -87,7 +88,6 @@ export default function NewClientButton() {
                   { label: "Full name", key: "full_name", type: "text", required: true },
                   { label: "Email", key: "email", type: "email", required: true },
                   { label: "Business name", key: "business_name", type: "text", required: false },
-                  { label: "Temporary password", key: "password", type: "password", required: true },
                 ].map(({ label, key, type, required }) => (
                   <div key={key}>
                     <label className="text-xs font-semibold uppercase tracking-wider block mb-1.5" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
@@ -99,15 +99,30 @@ export default function NewClientButton() {
                       value={form[key as keyof typeof form]}
                       onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                      style={{
-                        background: "var(--secondary)",
-                        border: "1px solid var(--border)",
-                        color: "var(--foreground)",
-                        fontFamily: "var(--font-body)",
-                      }}
+                      style={{ background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: "var(--font-body)" }}
                     />
                   </div>
                 ))}
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider block mb-1.5" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                    Temporary password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--foreground)", fontFamily: "var(--font-body)", paddingRight: "2.75rem" }}
+                    />
+                    <button type="button" onClick={() => setShowPassword((v) => !v)} tabIndex={-1}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      style={{ color: "var(--ll-grey)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "var(--secondary)", color: "var(--foreground)", fontFamily: "var(--font-body)", border: "1px solid var(--border)" }}>

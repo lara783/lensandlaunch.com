@@ -14,10 +14,10 @@ export default async function OnboardingPage() {
     .eq("id", user.id)
     .single();
 
-  const [{ data: brandKit }, { data: assets }, { data: proposals }] = await Promise.all([
+  const [{ data: brandKit }, { data: assets }, { data: brief }] = await Promise.all([
     (supabase as any).from("brand_kits").select("colors, fonts, logo_url").eq("client_id", user.id).single(),
     (supabase as any).from("client_assets").select("id").eq("client_id", user.id).limit(1),
-    supabase.from("proposals").select("id").eq("client_id", user.id).limit(1),
+    (supabase as any).from("onboarding_briefs").select("submitted_at").eq("client_id", user.id).maybeSingle(),
   ]);
 
   const completionState = {
@@ -25,7 +25,7 @@ export default async function OnboardingPage() {
     hasBrandFonts: Array.isArray(brandKit?.fonts) && brandKit.fonts.length > 0,
     hasLogo: !!brandKit?.logo_url,
     hasAssets: Array.isArray(assets) && assets.length > 0,
-    hasProposal: Array.isArray(proposals) && proposals.length > 0,
+    hasBrief: !!(brief as any)?.submitted_at,
   };
 
   const firstName = (profile?.full_name ?? "").split(" ")[0] || "there";

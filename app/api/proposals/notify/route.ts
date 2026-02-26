@@ -122,5 +122,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Sync to HubSpot (fire-and-forget — don't block the response)
+  const hubSyncBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://portal.lensandlaunch.com";
+  fetch(`${hubSyncBase}/api/hubspot/sync`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ proposalId, action: "sent" }),
+  }).catch((err) => console.warn("[notify] HubSpot sync skipped:", err));
+
   return NextResponse.json({ ok: true, sentTo: clientEmail });
 }

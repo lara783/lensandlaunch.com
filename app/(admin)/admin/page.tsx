@@ -1,15 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { TopBar } from "@/components/layout/TopBar";
 import Link from "next/link";
+import AdminAnalyticsSummary from "./AdminAnalyticsSummary";
 
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
 
-  const [{ data: clients }, { data: recentProposals }, { data: activeProjects }] =
+  const [{ data: clients }, { data: recentProposals }, { data: activeProjects }, { data: allAnalytics }] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("role", "client").order("created_at", { ascending: false }),
       supabase.from("proposals").select("*, profiles(full_name, business_name)").order("created_at", { ascending: false }).limit(5),
       supabase.from("projects").select("*, profiles(full_name)").eq("status", "active").order("created_at", { ascending: false }),
+      (supabase as any).from("content_analytics").select("client_id, platform, reach, impressions, engagement_rate, new_followers, period_start, profiles(full_name, business_name)").order("period_start", { ascending: false }).limit(200),
     ]);
 
   const cardStyle: React.CSSProperties = {
@@ -83,6 +85,9 @@ export default async function AdminOverviewPage() {
           ))}
         </div>
       </div>
+
+      {/* Analytics Overview */}
+      <AdminAnalyticsSummary analytics={allAnalytics ?? []} clients={clients ?? []} />
 
       {/* Client list */}
       <div className="mt-10">

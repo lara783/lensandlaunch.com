@@ -14,26 +14,39 @@ import {
   Calendar,
   Palette,
   FileText,
+  Settings,
 } from "lucide-react";
 
 const clientNav = [
-  { label: "Home",      href: "/dashboard",  icon: <LayoutDashboard size={20} /> },
-  { label: "Proposals", href: "/proposals",  icon: <FileText size={20} /> },
-  { label: "Timeline",  href: "/timeline",   icon: <CheckSquare size={20} /> },
-  { label: "Files",     href: "/documents",  icon: <FolderOpen size={20} /> },
-  { label: "Book",      href: "/schedule",   icon: <CalendarCheck size={20} /> },
+  { label: "Home",      href: "/dashboard",   icon: <LayoutDashboard size={20} /> },
+  { label: "Deliverables", href: "/deliverables", icon: <CheckSquare size={20} /> },
+  { label: "Team",      href: "/team",        icon: <Users size={20} /> },
+  { label: "Book",      href: "/schedule",    icon: <CalendarCheck size={20} /> },
+  { label: "Settings",  href: "/settings",    icon: <Settings size={20} /> },
 ];
 
 const adminNav = [
   { label: "Overview",  href: "/admin",               icon: <LayoutDashboard size={20} /> },
   { label: "Clients",   href: "/admin/clients",       icon: <Users size={20} /> },
-  { label: "Proposal",  href: "/admin/proposals/new", icon: <FilePlus size={20} /> },
   { label: "Calendar",  href: "/admin/calendar",      icon: <Calendar size={20} /> },
+  { label: "Settings",  href: "/admin/settings",      icon: <Settings size={20} /> },
 ];
 
-export function BottomNav({ role }: { role: "client" | "admin" }) {
+const teamNav = [
+  { label: "Home",     href: "/workspace",            icon: <LayoutDashboard size={20} /> },
+  { label: "Projects", href: "/workspace/projects",   icon: <FolderOpen size={20} /> },
+  { label: "Clients",  href: "/workspace/clients",    icon: <Users size={20} /> },
+  { label: "Settings", href: "/workspace/settings",   icon: <Settings size={20} /> },
+];
+
+const preAcceptanceNav = [
+  { label: "Proposal", href: "/proposals", icon: <FileText size={20} /> },
+  { label: "Book",     href: "/schedule",  icon: <CalendarCheck size={20} /> },
+];
+
+export function BottomNav({ role, onboardingUnlocked = true }: { role: "client" | "admin" | "team"; onboardingUnlocked?: boolean }) {
   const pathname = usePathname();
-  const nav = role === "admin" ? adminNav : clientNav;
+  const nav = role === "admin" ? adminNav : role === "team" ? teamNav : (!onboardingUnlocked ? preAcceptanceNav : clientNav);
 
   return (
     <nav

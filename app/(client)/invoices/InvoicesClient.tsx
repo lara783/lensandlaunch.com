@@ -65,7 +65,7 @@ export default function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
               className="w-full flex items-center justify-between px-6 py-4 text-left"
               style={{ fontFamily: "var(--font-body)" }}
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                   {invoice.invoice_number}
                 </span>
@@ -75,6 +75,18 @@ export default function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                 >
                   {s.label}
                 </span>
+                {invoice.payment_type === "deposit" && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
+                    style={{ background: "rgba(156,132,122,0.12)", color: "var(--ll-taupe)", fontFamily: "var(--font-body)" }}>
+                    Booking Deposit (50%)
+                  </span>
+                )}
+                {invoice.payment_type === "balance" && (
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
+                    style={{ background: "rgba(1,1,1,0.06)", color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                    Balance on Delivery (50%)
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-6">

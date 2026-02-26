@@ -18,21 +18,30 @@ export async function POST() {
   const buckets = [
     { name: "documents", public: true },
     { name: "assets", public: true },
+    { name: "deliverable-videos", public: true },
   ];
 
   const results = [];
   for (const bucket of buckets) {
-    const { error } = await serviceClient.storage.createBucket(bucket.name, {
+    const { error: createErr } = await serviceClient.storage.createBucket(bucket.name, {
       public: bucket.public,
-      fileSizeLimit: 52428800, // 50MB
-      allowedMimeTypes: undefined, // allow all
+      fileSizeLimit: 524288000, // 500MB
+      allowedMimeTypes: undefined,
     });
-    // "already exists" error is fine
-    const alreadyExists = error?.message?.includes("already exists");
+    const alreadyExists = createErr?.message?.includes("already exists");
+
+    // If bucket already existed, update it to ensure public=true and the larger size limit
+    if (alreadyExists) {
+      await serviceClient.storage.updateBucket(bucket.name, {
+        public: bucket.public,
+        fileSizeLimit: 524288000,
+      });
+    }
+
     results.push({
       bucket: bucket.name,
-      status: error && !alreadyExists ? "error" : "ok",
-      note: alreadyExists ? "already existed" : error ? error.message : "created",
+      status: createErr && !alreadyExists ? "error" : "ok",
+      note: alreadyExists ? "updated" : createErr ? createErr.message : "created",
     });
   }
 

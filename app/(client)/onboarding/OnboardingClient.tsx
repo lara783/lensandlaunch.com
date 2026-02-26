@@ -1,15 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Circle, Palette, ImageIcon, FileText, CalendarCheck, BookOpen } from "lucide-react";
+import { CheckCircle2, Circle, Palette, ImageIcon, FileText, CalendarCheck, BookOpen, ArrowRight, ClipboardList } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 interface CompletionState {
   hasBrandColors: boolean;
   hasBrandFonts: boolean;
   hasLogo: boolean;
   hasAssets: boolean;
-  hasProposal: boolean;
+  hasBrief: boolean;
 }
 
 interface Step {
@@ -29,6 +33,27 @@ export default function OnboardingClient({
   firstName: string;
   completionState: CompletionState;
 }) {
+  const router = useRouter();
+  const [completing, setCompleting] = useState(false);
+
+  async function completeOnboarding() {
+    setCompleting(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setCompleting(false); return; }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ onboarding_complete: true })
+      .eq("id", user.id);
+    if (error) {
+      toast.error("Something went wrong — please try again.");
+      setCompleting(false);
+      return;
+    }
+    toast.success("Setup complete! Welcome to your portal.");
+    router.push("/dashboard");
+    router.refresh();
+  }
   const steps: Step[] = [
     {
       id: "logo",
@@ -71,14 +96,14 @@ export default function OnboardingClient({
       href: "/brand-kit",
     },
     {
-      id: "proposal",
-      icon: <FileText size={20} />,
-      title: "Review your proposal",
+      id: "brief",
+      icon: <ClipboardList size={20} />,
+      title: "Complete your brand brief",
       description:
-        "Your Lens & Launch proposal outlines the scope, timeline, and deliverables for your project. Take a look and accept when ready.",
-      done: completionState.hasProposal,
-      cta: "View proposals →",
-      href: "/dashboard",
+        "Tell us about your business, audience, brand personality, and content goals. This is how we build a strategy that's truly yours — takes about 5 minutes.",
+      done: completionState.hasBrief,
+      cta: "Start brand brief →",
+      href: "/onboarding/brand-brief",
     },
     {
       id: "call",
@@ -88,7 +113,7 @@ export default function OnboardingClient({
         "Schedule a 30-minute call with Lara to walk through your project, timeline, and any questions you have.",
       done: false,
       cta: "Book a call →",
-      href: "/schedule",
+      href: "/schedule/onboarding-call",
     },
   ];
 
@@ -140,10 +165,19 @@ export default function OnboardingClient({
             transition={{ duration: 1, ease: [0.25, 0.8, 0.25, 1], delay: 0.3 }}
           />
         </div>
-        {doneCount === totalCount && (
-          <p className="mt-3 text-xs font-semibold" style={{ color: "var(--ll-taupe)", fontFamily: "var(--font-body)" }}>
-            You&apos;re all set! 🎉
-          </p>
+        {doneCount >= totalCount - 1 && (
+          <motion.button
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            onClick={completeOnboarding}
+            disabled={completing}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold"
+            style={{ background: "var(--ll-taupe)", color: "#fff", fontFamily: "var(--font-body)", cursor: completing ? "not-allowed" : "pointer", opacity: completing ? 0.7 : 1 }}
+          >
+            {completing ? "Saving…" : "Setup complete — continue to dashboard"}
+            {!completing && <ArrowRight size={14} />}
+          </motion.button>
         )}
       </motion.div>
 
@@ -248,6 +282,23 @@ export default function OnboardingClient({
             </div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Skip / Complete at bottom */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="mt-6 text-center"
+      >
+        <button
+          onClick={completeOnboarding}
+          disabled={completing}
+          className="text-xs"
+          style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)", cursor: completing ? "not-allowed" : "pointer" }}
+        >
+          {completing ? "Saving…" : "Skip for now — I'll come back to this →"}
+        </button>
       </motion.div>
     </div>
   );

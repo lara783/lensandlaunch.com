@@ -8,9 +8,10 @@ export default async function EditProposalPage({ params }: { params: Promise<{ i
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: proposal }, { data: clients }] = await Promise.all([
+  const [{ data: proposal }, { data: clients }, { data: services }] = await Promise.all([
     (supabase as any).from("proposals").select("*").eq("id", id).single(),
     supabase.from("profiles").select("id, full_name, business_name, email").eq("role", "client").order("full_name"),
+    (supabase as any).from("services").select("id, category, name, charge_out_rate, unit, active").eq("active", true).order("sort_order"),
   ]);
 
   if (!proposal) notFound();
@@ -47,6 +48,7 @@ export default async function EditProposalPage({ params }: { params: Promise<{ i
         savedProposals={savedProposals ?? []}
         editProposal={proposal}
         initialProjects={initialProjects ?? []}
+        services={services ?? []}
       />
     </div>
   );

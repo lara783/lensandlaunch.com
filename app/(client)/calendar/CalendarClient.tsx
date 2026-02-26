@@ -130,6 +130,7 @@ export default function CalendarClient({ events }: { events: CalEvent[] }) {
           ref={calRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          timeZone="Australia/Brisbane"
           headerToolbar={{
             left: "prev,next today",
             center: "title",

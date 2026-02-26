@@ -4,12 +4,17 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { createClient } from "@/lib/supabase/client";
-import type { Deliverable } from "@/lib/supabase/types";
+import { Play } from "lucide-react";
+import dynamic from "next/dynamic";
+import type { Deliverable, DeliverableReview } from "@/lib/supabase/types";
+
+const VideoReviewModal = dynamic(() => import("@/components/deliverables/VideoReviewModal"), { ssr: false });
 
 interface Props {
   initialDeliverables: Deliverable[];
   projectId: string | null;
   userId: string;
+  videoReviews: DeliverableReview[];
 }
 
 function CheckCircle({ checked, onClick, disabled }: { checked: boolean; onClick: () => void; disabled?: boolean }) {
@@ -43,9 +48,14 @@ function CheckCircle({ checked, onClick, disabled }: { checked: boolean; onClick
   );
 }
 
-export default function TimelineClient({ initialDeliverables, projectId, userId }: Props) {
+export default function TimelineClient({ initialDeliverables, projectId, userId, videoReviews }: Props) {
   const [deliverables, setDeliverables] = useState<Deliverable[]>(initialDeliverables);
+  const [activeReview, setActiveReview] = useState<{ review: DeliverableReview; title: string } | null>(null);
   const supabase = createClient();
+
+  const reviewByDeliverable = Object.fromEntries(
+    videoReviews.map((r) => [r.deliverable_id, r])
+  );
 
   // Realtime subscription
   useEffect(() => {
@@ -191,6 +201,33 @@ export default function TimelineClient({ initialDeliverables, projectId, userId 
                   Due {new Date(d.due_date).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
                 </p>
               )}
+              {reviewByDeliverable[d.id] && (
+                <button
+                  onClick={() => setActiveReview({ review: reviewByDeliverable[d.id], title: d.title })}
+                  className="flex items-center gap-1.5 text-xs font-semibold mt-2 px-2.5 py-1 rounded-lg"
+                  style={{
+                    background: reviewByDeliverable[d.id].status === "approved"
+                      ? "rgba(39,103,73,0.08)"
+                      : reviewByDeliverable[d.id].status === "changes_requested"
+                        ? "rgba(239,68,68,0.08)"
+                        : "rgba(156,132,122,0.12)",
+                    color: reviewByDeliverable[d.id].status === "approved"
+                      ? "#276749"
+                      : reviewByDeliverable[d.id].status === "changes_requested"
+                        ? "#c53030"
+                        : "var(--ll-taupe)",
+                    border: "1px solid transparent",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  <Play size={10} />
+                  {reviewByDeliverable[d.id].status === "approved"
+                    ? "Video approved"
+                    : reviewByDeliverable[d.id].status === "changes_requested"
+                      ? "Changes requested"
+                      : "Review video"}
+                </button>
+              )}
             </div>
 
             {/* Agency check — read-only for clients */}
@@ -213,6 +250,20 @@ export default function TimelineClient({ initialDeliverables, projectId, userId 
       <p className="mt-5 text-xs" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
         You can approve a deliverable once Lens &amp; Launch has marked it complete.
       </p>
+
+      {/* Video Review Modal */}
+      {activeReview && (
+        <VideoReviewModal
+          deliverableId={activeReview.review.deliverable_id}
+          deliverableTitle={activeReview.title}
+          review={activeReview.review}
+          isAdmin={false}
+          onClose={() => setActiveReview(null)}
+          onStatusChange={(status) => {
+            setActiveReview((prev) => prev ? { ...prev, review: { ...prev.review, status } } : null);
+          }}
+        />
+      )}
     </div>
   );
 }

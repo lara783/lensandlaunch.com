@@ -4,7 +4,7 @@ import ProposalBuilderClient from "./ProposalBuilderClient";
 
 export default async function NewProposalPage() {
   const supabase = await createClient();
-  const [{ data: clients }, { data: drafts }] = await Promise.all([
+  const [{ data: clients }, { data: drafts }, { data: services }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, full_name, business_name, email")
@@ -16,13 +16,18 @@ export default async function NewProposalPage() {
       .in("status", ["draft", "sent"])
       .order("created_at", { ascending: false })
       .limit(20),
+    (supabase as any)
+      .from("services")
+      .select("id, category, name, charge_out_rate, unit, active")
+      .eq("active", true)
+      .order("sort_order"),
   ]);
 
   return (
     <div className="p-6 md:p-8 w-full">
       <TopBar title="New Proposal" subtitle="Build, preview, and send a proposal to a client." />
       <div className="mt-8">
-        <ProposalBuilderClient clients={clients ?? []} savedProposals={drafts ?? []} />
+        <ProposalBuilderClient clients={clients ?? []} savedProposals={drafts ?? []} services={services ?? []} />
       </div>
     </div>
   );
