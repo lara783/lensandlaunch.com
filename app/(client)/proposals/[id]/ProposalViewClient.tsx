@@ -422,6 +422,7 @@ export default function ProposalViewClient({
   const supabase = createClient();
 
   const isPending = proposal.status === "sent";
+  const isOneOff = investmentTiers.length > 0 && investmentTiers[0].period === "one-off";
   const statusColor = proposal.status === "accepted" ? "#276749" : proposal.status === "declined" ? "#c53030" : "#9c847a";
 
   function scrollToSection(i: number) {
@@ -771,7 +772,7 @@ export default function ProposalViewClient({
 
       {/* ── Sticky bottom CTA ── */}
       <AnimatePresence>
-        {isPending && !adminNav && (
+        {isPending && !adminNav && !isOneOff && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
