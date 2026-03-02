@@ -35,8 +35,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
   }
 
-  const clientName = (proposal.profiles as unknown as { full_name: string } | null)?.full_name ?? "A client";
-  const businessName = (proposal.profiles as unknown as { business_name?: string } | null)?.business_name;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const profile: any = Array.isArray(proposal.profiles) ? proposal.profiles[0] : proposal.profiles;
+  const clientName: string = profile?.full_name ?? "A client";
+  const businessName: string | undefined = profile?.business_name;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://portal.lensandlaunch.com";
 
   const resend = new Resend(process.env.RESEND_API_KEY);
