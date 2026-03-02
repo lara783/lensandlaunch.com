@@ -407,7 +407,6 @@ export default function ProposalViewClient({
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [showShootModal, setShowShootModal] = useState(false);
-  const [selectedShootDuration, setSelectedShootDuration] = useState<string | null>(null);
   const [changeRequest, setChangeRequest] = useState("");
   const [sendingChange, setSendingChange] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
@@ -697,7 +696,7 @@ export default function ProposalViewClient({
                   What happens next
                 </p>
                 <button
-                  onClick={() => { setSelectedShootDuration(null); setShowShootModal(true); }}
+                  onClick={() => setShowShootModal(true)}
                   className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold justify-center"
                   style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)" }}
                 >
@@ -743,7 +742,7 @@ export default function ProposalViewClient({
                 What happens next
               </p>
               <button
-                onClick={() => { setSelectedShootDuration(null); setShowShootModal(true); }}
+                onClick={() => setShowShootModal(true)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold"
                 style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)" }}
               >
@@ -827,46 +826,13 @@ export default function ProposalViewClient({
                 </div>
                 <div className="mb-5" style={{ height: 1, background: "var(--border)" }} />
 
-                {/* Duration selector */}
-                {!selectedShootDuration ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {[
-                      { label: "1 hour",    url: "https://meetings-ap1.hubspot.com/lara-lawson/two-hour-shoot-" },
-                      { label: "1.5 hours", url: "https://meetings-ap1.hubspot.com/lara-lawson/15hr-shoot" },
-                      { label: "4 hours",   url: "https://meetings-ap1.hubspot.com/lara-lawson/1-hour-shoot" },
-                      { label: "Half day",  url: "https://meetings-ap1.hubspot.com/lara-lawson/half-day-shoot" },
-                      { label: "Full day",  url: "https://meetings-ap1.hubspot.com/lara-lawson/full-day-shoot-" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.label}
-                        onClick={() => setSelectedShootDuration(opt.url)}
-                        className="flex flex-col items-center justify-center py-5 px-4 rounded-2xl text-sm font-semibold transition-colors"
-                        style={{ background: "var(--secondary)", border: "1px solid var(--border)", color: "#010101", fontFamily: "var(--font-body)" }}
-                      >
-                        <CalendarDays size={18} style={{ color: "var(--ll-taupe)", marginBottom: 8 }} />
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setSelectedShootDuration(null)}
-                      className="flex items-center gap-1.5 text-xs font-semibold mb-4"
-                      style={{ color: "var(--ll-taupe)", fontFamily: "var(--font-body)" }}
-                    >
-                      <ChevronRight size={12} style={{ transform: "rotate(180deg)" }} />
-                      Change duration
-                    </button>
-                    <iframe
-                      src={selectedShootDuration}
-                      width="100%"
-                      height="620"
-                      style={{ border: "none", borderRadius: 12 }}
-                      title="Book your shoot"
-                    />
-                  </>
-                )}
+                <iframe
+                  src="https://meetings-ap1.hubspot.com/lara-lawson/shoot-scheduler-"
+                  width="100%"
+                  height="640"
+                  style={{ border: "none", borderRadius: 12 }}
+                  title="Book your shoot"
+                />
               </div>
             </motion.div>
           </>
