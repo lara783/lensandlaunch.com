@@ -25,9 +25,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Fetch proposal title
   const { data: proposal } = await supabase
     .from("proposals")
-    .select("id, title, profiles(full_name, business_name)")
+    .select("id, title")
     .eq("id", proposalId)
     .single();
 
@@ -35,10 +36,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const profile: any = Array.isArray(proposal.profiles) ? proposal.profiles[0] : proposal.profiles;
-  const clientName: string = profile?.full_name ?? "A client";
-  const businessName: string | undefined = profile?.business_name;
+  // Fetch client profile separately — avoids Supabase join type ambiguity
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, business_name")
+    .eq("id", user.id)
+    .single();
+
+  const clientName = profile?.full_name ?? "A client";
+  const businessName = profile?.business_name ?? null;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://portal.lensandlaunch.com";
 
   const resend = new Resend(process.env.RESEND_API_KEY);
