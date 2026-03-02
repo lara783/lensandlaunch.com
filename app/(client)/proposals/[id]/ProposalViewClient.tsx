@@ -8,7 +8,7 @@ import type { Proposal, PricingTier, ScopeItem, TimelineStep } from "@/lib/supab
 import Link from "next/link";
 import {
   CheckCircle2, X, Layers, DollarSign,
-  CalendarDays, ArrowRight, Sparkles, ChevronRight, ArrowLeft, Pencil, FileDown, Loader2, Phone,
+  CalendarDays, ArrowRight, Sparkles, ChevronRight, ArrowLeft, Pencil, FileDown, Loader2,
 } from "lucide-react";
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
@@ -406,6 +406,8 @@ export default function ProposalViewClient({
   const [loading, setLoading] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
+  const [showShootModal, setShowShootModal] = useState(false);
+  const [selectedShootDuration, setSelectedShootDuration] = useState<string | null>(null);
   const [changeRequest, setChangeRequest] = useState("");
   const [sendingChange, setSendingChange] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
@@ -422,7 +424,6 @@ export default function ProposalViewClient({
   const supabase = createClient();
 
   const isPending = proposal.status === "sent";
-  const isOneOff = investmentTiers.length > 0 && investmentTiers[0].period === "one-off";
   const statusColor = proposal.status === "accepted" ? "#276749" : proposal.status === "declined" ? "#c53030" : "#9c847a";
 
   function scrollToSection(i: number) {
@@ -695,20 +696,14 @@ export default function ProposalViewClient({
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: "#276749", fontFamily: "var(--font-body)" }}>
                   What happens next
                 </p>
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  <Link href="/schedule"
-                    className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold justify-center"
-                    style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)" }}>
-                    <Phone size={13} />
-                    Book your onboarding call
-                  </Link>
-                  <Link href="/calendar"
-                    className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold justify-center"
-                    style={{ background: "rgba(156,132,122,0.1)", color: "var(--ll-taupe)", border: "1px solid rgba(156,132,122,0.2)", fontFamily: "var(--font-body)" }}>
-                    <CalendarDays size={13} />
-                    Book your first shoot
-                  </Link>
-                </div>
+                <button
+                  onClick={() => { setSelectedShootDuration(null); setShowShootModal(true); }}
+                  className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold justify-center"
+                  style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)" }}
+                >
+                  <CalendarDays size={13} />
+                  Book your shoot
+                </button>
               </>
             )}
           </motion.div>
@@ -747,24 +742,14 @@ export default function ProposalViewClient({
               <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: "#276749", fontFamily: "var(--font-body)" }}>
                 What happens next
               </p>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <Link
-                  href="/schedule"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold flex-1 justify-center"
-                  style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)", minWidth: 180 }}
-                >
-                  <Phone size={13} />
-                  Book your onboarding call
-                </Link>
-                <Link
-                  href="/calendar"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-semibold flex-1 justify-center"
-                  style={{ background: "rgba(156,132,122,0.1)", color: "var(--ll-taupe)", border: "1px solid rgba(156,132,122,0.2)", fontFamily: "var(--font-body)", minWidth: 180 }}
-                >
-                  <CalendarDays size={13} />
-                  Book your first shoot
-                </Link>
-              </div>
+              <button
+                onClick={() => { setSelectedShootDuration(null); setShowShootModal(true); }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold"
+                style={{ background: "#010101", color: "#fff", fontFamily: "var(--font-body)" }}
+              >
+                <CalendarDays size={13} />
+                Book your shoot
+              </button>
             </div>
           </motion.div>
         )}
@@ -772,7 +757,7 @@ export default function ProposalViewClient({
 
       {/* ── Sticky bottom CTA ── */}
       <AnimatePresence>
-        {isPending && !adminNav && !isOneOff && (
+        {isPending && !adminNav && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -807,6 +792,84 @@ export default function ProposalViewClient({
               </motion.button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Shoot booking modal ── */}
+      <AnimatePresence>
+        {showShootModal && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}
+              onClick={() => setShowShootModal(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl md:left-16 overflow-y-auto"
+              style={{ background: "#fff", boxShadow: "0 -12px 48px rgba(0,0,0,0.12)", maxWidth: 720, margin: "0 auto", border: "1px solid var(--border)", maxHeight: "92vh" }}
+            >
+              <div className="p-8">
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", color: "#010101" }}>
+                      Book your shoot
+                    </h3>
+                    <p className="text-sm mt-1" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                      Select the duration that matches your shoot.
+                    </p>
+                  </div>
+                  <button onClick={() => setShowShootModal(false)} className="p-2 rounded-xl shrink-0 ml-4"
+                    style={{ background: "var(--secondary)", color: "var(--ll-grey)", border: "1px solid var(--border)" }}>
+                    <X size={16} />
+                  </button>
+                </div>
+                <div className="mb-5" style={{ height: 1, background: "var(--border)" }} />
+
+                {/* Duration selector */}
+                {!selectedShootDuration ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      { label: "1 hour",    url: "https://meetings-ap1.hubspot.com/lara-lawson/two-hour-shoot-" },
+                      { label: "1.5 hours", url: "https://meetings-ap1.hubspot.com/lara-lawson/15hr-shoot" },
+                      { label: "4 hours",   url: "https://meetings-ap1.hubspot.com/lara-lawson/1-hour-shoot" },
+                      { label: "Half day",  url: "https://meetings-ap1.hubspot.com/lara-lawson/half-day-shoot" },
+                      { label: "Full day",  url: "https://meetings-ap1.hubspot.com/lara-lawson/full-day-shoot-" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.label}
+                        onClick={() => setSelectedShootDuration(opt.url)}
+                        className="flex flex-col items-center justify-center py-5 px-4 rounded-2xl text-sm font-semibold transition-colors"
+                        style={{ background: "var(--secondary)", border: "1px solid var(--border)", color: "#010101", fontFamily: "var(--font-body)" }}
+                      >
+                        <CalendarDays size={18} style={{ color: "var(--ll-taupe)", marginBottom: 8 }} />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setSelectedShootDuration(null)}
+                      className="flex items-center gap-1.5 text-xs font-semibold mb-4"
+                      style={{ color: "var(--ll-taupe)", fontFamily: "var(--font-body)" }}
+                    >
+                      <ChevronRight size={12} style={{ transform: "rotate(180deg)" }} />
+                      Change duration
+                    </button>
+                    <iframe
+                      src={selectedShootDuration}
+                      width="100%"
+                      height="620"
+                      style={{ border: "none", borderRadius: 12 }}
+                      title="Book your shoot"
+                    />
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
