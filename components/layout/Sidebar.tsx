@@ -110,8 +110,6 @@ export function Sidebar({ role, userName, analyticsEnabled, onboardingComplete, 
 
   return (
     <motion.aside
-      onHoverStart={() => setExpanded(true)}
-      onHoverEnd={() => setExpanded(false)}
       animate={{ width: expanded ? 220 : 64 }}
       transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
       className="fixed left-0 top-0 bottom-0 z-40 hidden md:flex flex-col overflow-hidden"
@@ -220,6 +218,20 @@ export function Sidebar({ role, userName, analyticsEnabled, onboardingComplete, 
         })}
       </nav>
 
+      {/* Toggle button */}
+      <div className="px-2 pb-1">
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors hover:bg-white/10"
+          style={{ color: "rgba(255,255,255,0.35)" }}
+          title={expanded ? "Collapse sidebar" : "Expand sidebar"}
+        >
+          <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}>
+            <ChevronRight size={16} />
+          </motion.div>
+        </button>
+      </div>
+
       {/* Bottom: user + logout */}
       <div className="px-2 pb-4 space-y-1">
         <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 8 }} />
@@ -272,13 +284,6 @@ export function Sidebar({ role, userName, analyticsEnabled, onboardingComplete, 
         </button>
       </div>
 
-      {/* Expand hint */}
-      <motion.div
-        className="absolute right-0 top-1/2 -translate-y-1/2"
-        animate={{ opacity: expanded ? 0 : 0.3 }}
-      >
-        <ChevronRight size={12} color="white" />
-      </motion.div>
     </motion.aside>
   );
 }

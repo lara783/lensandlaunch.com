@@ -1,13 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
-
-const CursorFollower = dynamic(
-  () => import("@/components/ui/cursor-follower").then((m) => m.CursorFollower),
-  { ssr: false }
-);
 
 interface Props {
   role: "client" | "admin" | "team";
@@ -21,7 +15,6 @@ interface Props {
 export function PortalLayout({ role, userName, analyticsEnabled, onboardingComplete, onboardingUnlocked, children }: Props) {
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--background)" }}>
-      <CursorFollower />
       <Sidebar
         role={role}
         userName={userName}

@@ -175,13 +175,13 @@ function ScopeSection({ body, scopeItems }: { body: string; scopeItems?: ScopeIt
           <table className="w-full" style={{ borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#010101" }}>
-                <th className="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider"
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider"
                   style={{ color: "rgba(255,255,255,0.45)", fontFamily: "var(--font-body)", width: "42%" }}>
                   What&apos;s included
                 </th>
                 {TIER_NAMES.map((name, i) => (
-                  <th key={i} className="px-5 py-4 text-center"
-                    style={{ fontFamily: "var(--font-body)", minWidth: 100 }}>
+                  <th key={i} className="px-3 py-3 text-center"
+                    style={{ fontFamily: "var(--font-body)", minWidth: 80 }}>
                     <span className="block text-xs font-bold uppercase tracking-widest"
                       style={{ color: i === 1 ? "#9c847a" : "rgba(255,255,255,0.75)" }}>
                       {name}
@@ -204,11 +204,11 @@ function ScopeSection({ body, scopeItems }: { body: string; scopeItems?: ScopeIt
                   transition={{ delay: ri * 0.03 }}
                   style={{ borderBottom: "1px solid var(--border)", background: ri % 2 === 0 ? "transparent" : "rgba(156,132,122,0.025)" }}
                 >
-                  <td className="px-6 py-3.5 text-sm font-medium" style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}>
+                  <td className="px-4 py-2.5 text-sm font-medium" style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}>
                     {item.feature}
                   </td>
                   {[item.essential, item.growth, item.premium].map((val, ci) => (
-                    <td key={ci} className="px-5 py-3.5 text-center text-sm" style={{ fontFamily: "var(--font-body)" }}>
+                    <td key={ci} className="px-3 py-2.5 text-center text-xs" style={{ fontFamily: "var(--font-body)" }}>
                       {!val || val === "" ? (
                         <span style={{ color: "var(--ll-neutral)", fontSize: "1rem" }}>—</span>
                       ) : val === "✓" ? (
@@ -405,6 +405,9 @@ export default function ProposalViewClient({
   const [proposal, setProposal] = useState(initial);
   const [loading, setLoading] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [changeRequest, setChangeRequest] = useState("");
+  const [sendingChange, setSendingChange] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [acceptName, setAcceptName] = useState("");
   const [acceptEmail, setAcceptEmail] = useState("");
@@ -785,12 +788,12 @@ export default function ProposalViewClient({
           >
             <div className="flex items-center gap-3 max-w-2xl mx-auto">
               <button
-                onClick={decline}
+                onClick={() => setShowChangeModal(true)}
                 disabled={loading}
                 className="px-5 py-3 rounded-2xl text-sm font-semibold shrink-0"
                 style={{ background: "var(--secondary)", color: "var(--ll-grey)", border: "1px solid var(--border)", fontFamily: "var(--font-body)" }}
               >
-                Not right for me
+                Request a change
               </button>
               <motion.button
                 whileTap={{ scale: 0.98 }}
@@ -803,6 +806,93 @@ export default function ProposalViewClient({
               </motion.button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Request a change modal ── */}
+      <AnimatePresence>
+        {showChangeModal && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)" }}
+              onClick={() => setShowChangeModal(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl p-8 md:left-16 overflow-y-auto"
+              style={{ background: "#fff", boxShadow: "0 -12px 48px rgba(0,0,0,0.12)", maxWidth: 680, margin: "0 auto", border: "1px solid var(--border)", maxHeight: "90vh" }}
+            >
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", color: "#010101" }}>
+                    Request a change
+                  </h3>
+                  <p className="text-sm mt-1" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                    Tell us what you&apos;d like adjusted and we&apos;ll get back to you.
+                  </p>
+                </div>
+                <button onClick={() => setShowChangeModal(false)} className="p-2 rounded-xl shrink-0 ml-4"
+                  style={{ background: "var(--secondary)", color: "var(--ll-grey)", border: "1px solid var(--border)" }}>
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="mb-5" style={{ height: 1, background: "var(--border)" }} />
+
+              <textarea
+                value={changeRequest}
+                onChange={(e) => setChangeRequest(e.target.value)}
+                placeholder="e.g. I'd like to adjust the timeline section, or swap out the Growth package details…"
+                rows={5}
+                className="w-full rounded-2xl p-4 text-sm resize-none outline-none"
+                style={{
+                  background: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "#010101",
+                  fontFamily: "var(--font-body)",
+                  lineHeight: 1.6,
+                }}
+              />
+
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                disabled={sendingChange || !changeRequest.trim()}
+                onClick={async () => {
+                  if (!changeRequest.trim()) return;
+                  setSendingChange(true);
+                  try {
+                    const res = await fetch("/api/proposals/request-change", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ proposalId: proposal.id, changeRequest }),
+                    });
+                    if (!res.ok) throw new Error("Failed");
+                    toast.success("Change request sent — we'll be in touch soon.");
+                    setShowChangeModal(false);
+                    setChangeRequest("");
+                  } catch {
+                    toast.error("Something went wrong. Please try again.");
+                  } finally {
+                    setSendingChange(false);
+                  }
+                }}
+                className="mt-4 w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
+                style={{
+                  background: changeRequest.trim() ? "#010101" : "var(--secondary)",
+                  color: changeRequest.trim() ? "#fff" : "var(--ll-grey)",
+                  fontFamily: "var(--font-body)",
+                  cursor: changeRequest.trim() ? "pointer" : "not-allowed",
+                }}
+              >
+                {sendingChange ? (
+                  <><Loader2 size={14} className="animate-spin" /> Sending…</>
+                ) : (
+                  "Send Request"
+                )}
+              </motion.button>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

@@ -8,7 +8,9 @@ import type { ProposalSection } from "@/lib/supabase/types";
 const styles = StyleSheet.create({
   page: {
     backgroundColor: "#ffffff",
-    padding: 56,
+    paddingTop: 56,
+    paddingHorizontal: 56,
+    paddingBottom: 80,
     fontFamily: "Helvetica",
   },
   header: {
@@ -142,7 +144,7 @@ export async function POST(req: NextRequest) {
 
           {/* Sections */}
           {sections.map((s, i) => (
-            <View key={i} style={styles.section}>
+            <View key={i} style={styles.section} wrap={false}>
               <Text style={styles.sectionHeading}>{s.heading}</Text>
               <View style={styles.rule} />
               {s.tiers && s.tiers.length > 0 ? (() => {
