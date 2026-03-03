@@ -125,6 +125,12 @@ export default function ProposalBuilderClient({ clients, savedProposals, editPro
     () => new Set(services.map((s) => s.id))
   );
   const [serviceOverrides, setServiceOverrides] = useState<Record<string, number>>({});
+  const [shootBookingEnabled, setShootBookingEnabled] = useState<boolean>(
+    (editProposal as any)?.shoot_booking_enabled ?? true
+  );
+  const [shootBookingUrl, setShootBookingUrl] = useState<string>(
+    (editProposal as any)?.shoot_booking_url ?? "https://meetings-ap1.hubspot.com/lara-lawson/shoot-scheduler-"
+  );
   const router = useRouter();
   const supabase = createClient();
 
@@ -431,6 +437,8 @@ export default function ProposalBuilderClient({ clients, savedProposals, editPro
     };
     if (!isEditing) payload.client_id = clientId;
     if (projectId) payload.project_id = projectId;
+    payload.shoot_booking_enabled = shootBookingEnabled;
+    payload.shoot_booking_url = shootBookingUrl.trim() || null;
 
     const query = isEditing
       ? (supabase as any).from("proposals").update(payload).eq("id", editProposal!.id).select().single()
@@ -995,6 +1003,52 @@ export default function ProposalBuilderClient({ clients, savedProposals, editPro
           <p className="text-xs text-center pt-1" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
             Sending will notify the client and generate a PDF.
           </p>
+        </div>
+
+        {/* Shoot Booking */}
+        <div className="rounded-2xl p-5 space-y-3" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+          <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>Shoot Booking</p>
+          <div className="ll-rule" />
+
+          {/* Toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm" style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}>
+              Show booking button
+            </span>
+            <button
+              type="button"
+              onClick={() => setShootBookingEnabled((v) => !v)}
+              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              style={{ background: shootBookingEnabled ? "#010101" : "var(--border)" }}
+            >
+              <span
+                className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                style={{ transform: shootBookingEnabled ? "translateX(24px)" : "translateX(4px)" }}
+              />
+            </button>
+          </div>
+
+          {/* URL field */}
+          {shootBookingEnabled && (
+            <div className="space-y-1.5">
+              <label className="text-[11px] uppercase tracking-wider" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                Scheduler URL
+              </label>
+              <input
+                type="url"
+                value={shootBookingUrl}
+                onChange={(e) => setShootBookingUrl(e.target.value)}
+                placeholder="https://meetings-ap1.hubspot.com/..."
+                className="w-full rounded-xl px-3 py-2 text-xs outline-none"
+                style={{
+                  background: "var(--secondary)",
+                  border: "1px solid var(--border)",
+                  color: "var(--foreground)",
+                  fontFamily: "var(--font-body)",
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Services selector */}

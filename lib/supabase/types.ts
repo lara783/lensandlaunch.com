@@ -121,6 +121,8 @@ export interface Proposal {
   pdf_url: string | null;
   sent_at: string | null;
   created_at: string;
+  shoot_booking_enabled: boolean;
+  shoot_booking_url: string | null;
 }
 
 export type DocumentType = "invoice" | "contract" | "other";

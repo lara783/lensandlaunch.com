@@ -690,7 +690,7 @@ export default function ProposalViewClient({
                 {new Date((proposal as any).signed_at).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
               </p>
             )}
-            {!adminNav && (
+            {!adminNav && (proposal as any).shoot_booking_enabled !== false && (
               <>
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: "#276749", fontFamily: "var(--font-body)" }}>
                   What happens next
@@ -722,7 +722,7 @@ export default function ProposalViewClient({
 
       {/* ── Post-acceptance "What's next" bar ── */}
       <AnimatePresence>
-        {proposal.status === "accepted" && !adminNav && (
+        {proposal.status === "accepted" && !adminNav && (proposal as any).shoot_booking_enabled !== false && (
           <motion.div
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -827,7 +827,7 @@ export default function ProposalViewClient({
                 <div className="mb-5" style={{ height: 1, background: "var(--border)" }} />
 
                 <iframe
-                  src="https://meetings-ap1.hubspot.com/lara-lawson/shoot-scheduler-"
+                  src={(proposal as any).shoot_booking_url ?? "https://meetings-ap1.hubspot.com/lara-lawson/shoot-scheduler-"}
                   width="100%"
                   height="640"
                   style={{ border: "none", borderRadius: 12 }}
