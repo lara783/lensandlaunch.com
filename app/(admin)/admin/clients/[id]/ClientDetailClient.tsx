@@ -138,7 +138,6 @@ export default function ClientDetailClient({
   const [newTags, setNewTags] = useState<string[]>([]);
 
   // Upload state
-  const [uploading, setUploading] = useState(false);
   const [uploadingVideoFor, setUploadingVideoFor] = useState<string | null>(null);
   const [contentUrls, setContentUrls] = useState<Record<string, string>>(
     Object.fromEntries(initDeliverables.map((d) => [d.id, d.content_url ?? ""]))
@@ -147,7 +146,9 @@ export default function ClientDetailClient({
   // Document form
   const [docName, setDocName] = useState("");
   const [docDesc, setDocDesc] = useState("");
+  const [docUrl, setDocUrl] = useState("");
   const [docType, setDocType] = useState<"invoice" | "contract" | "other">("invoice");
+  const [savingDoc, setSavingDoc] = useState(false);
 
   // Calendar event form
   const [newEvtTitle, setNewEvtTitle] = useState("");
@@ -623,32 +624,24 @@ export default function ClientDetailClient({
   }
 
   /* ── Documents ── */
-  async function uploadDocument(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !activeProjectId) return;
+  async function saveDocumentLink(e: React.FormEvent) {
+    e.preventDefault();
+    if (!activeProjectId) return;
     if (!docName.trim()) { toast.error("Enter a document name first."); return; }
-    setUploading(true);
+    if (!docUrl.trim()) { toast.error("Enter a link URL."); return; }
+    setSavingDoc(true);
     try {
-      const path = `${client.id}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage.from("documents").upload(path, file, { cacheControl: "3600", upsert: false });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(path);
       const { data: doc, error: insertError } = await (supabase as any).from("documents")
-        .insert({ project_id: activeProjectId, client_id: client.id, name: docName.trim(), description: docDesc.trim() || null, file_url: publicUrl, type: docType, size_bytes: file.size })
+        .insert({ project_id: activeProjectId, client_id: client.id, name: docName.trim(), description: docDesc.trim() || null, file_url: docUrl.trim(), type: docType })
         .select().single();
       if (insertError) throw insertError;
       setDocuments([doc, ...documents]);
-      setDocName(""); setDocDesc("");
-      toast.success("Document uploaded.");
+      setDocName(""); setDocDesc(""); setDocUrl("");
+      toast.success("Document saved.");
     } catch (err: any) {
-      if (err?.message?.includes("Bucket not found") || err?.statusCode === "404") {
-        toast.error("Storage bucket missing — click 'Setup storage' below first.");
-      } else {
-        toast.error(`Upload failed: ${err?.message ?? "unknown error"}`);
-      }
+      toast.error(`Failed to save: ${err?.message ?? "unknown error"}`);
     } finally {
-      setUploading(false);
-      e.target.value = "";
+      setSavingDoc(false);
     }
   }
 
@@ -656,18 +649,6 @@ export default function ClientDetailClient({
     setDocuments(documents.filter((d) => d.id !== id));
     await (supabase as any).from("documents").delete().eq("id", id);
     toast.success("Removed.");
-  }
-
-  async function initStorage() {
-    toast.loading("Setting up storage buckets…");
-    try {
-      const res = await fetch("/api/admin/init-storage", { method: "POST" });
-      const data = await res.json();
-      toast.dismiss();
-      const allOk = data.results?.every((r: any) => r.status === "ok");
-      if (allOk) toast.success("Storage ready.");
-      else toast.error("Some buckets failed. Check Supabase storage.");
-    } catch { toast.dismiss(); toast.error("Setup failed."); }
   }
 
   /* ── Calendar ── */
@@ -1883,8 +1864,8 @@ export default function ClientDetailClient({
         {tab === "documents" && (
           <motion.div key="documents" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             {activeProjectId ? (
-              <div className="rounded-2xl p-5 mb-6 space-y-3" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>Upload file</p>
+              <form onSubmit={saveDocumentLink} className="rounded-2xl p-5 mb-6 space-y-3" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>Add document link</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <input type="text" placeholder="File name" value={docName} onChange={(e) => setDocName(e.target.value)} style={inputStyle} />
                   <input type="text" placeholder="Description (optional)" value={docDesc} onChange={(e) => setDocDesc(e.target.value)} style={inputStyle} />
@@ -1894,17 +1875,13 @@ export default function ClientDetailClient({
                     <option value="other">Other</option>
                   </select>
                 </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <label className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl cursor-pointer" style={{ background: uploading ? "var(--secondary)" : "#010101", color: uploading ? "var(--ll-grey)" : "#fff", fontFamily: "var(--font-body)" }}>
-                    <Upload size={14} />
-                    {uploading ? "Uploading…" : "Choose file & upload"}
-                    <input type="file" className="hidden" onChange={uploadDocument} disabled={uploading} />
-                  </label>
-                  <button onClick={initStorage} className="text-xs px-3 py-2 rounded-xl" style={{ background: "var(--secondary)", color: "var(--ll-grey)", border: "1px solid var(--border)", fontFamily: "var(--font-body)" }}>
-                    Setup storage buckets
+                <input type="url" placeholder="Paste link (Google Drive, Dropbox, etc.)" value={docUrl} onChange={(e) => setDocUrl(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+                <div className="flex items-center gap-3">
+                  <button type="submit" disabled={savingDoc} className="text-sm font-semibold px-4 py-2.5 rounded-xl" style={{ background: savingDoc ? "var(--secondary)" : "var(--ll-taupe)", color: savingDoc ? "var(--ll-grey)" : "#fff", fontFamily: "var(--font-body)", cursor: savingDoc ? "not-allowed" : "pointer" }}>
+                    {savingDoc ? "Saving…" : "Save document"}
                   </button>
                 </div>
-              </div>
+              </form>
             ) : (
               <p className="text-sm mb-4" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>No project selected.</p>
             )}
