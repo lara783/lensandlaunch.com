@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff } from "lucide-react";
@@ -18,22 +17,27 @@ export default function NewClientButton() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await fetch("/api/admin/create-client", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch("/api/admin/create-client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      toast.error(data.error ?? "Failed to create client.");
-    } else {
-      toast.success(`Client ${form.full_name} created.`);
-      setOpen(false);
-      setForm({ email: "", full_name: "", business_name: "", password: "" });
-      router.refresh();
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to create client.");
+      } else {
+        toast.success(`Client ${form.full_name} created.`);
+        setOpen(false);
+        setForm({ email: "", full_name: "", business_name: "", password: "" });
+        router.refresh();
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
