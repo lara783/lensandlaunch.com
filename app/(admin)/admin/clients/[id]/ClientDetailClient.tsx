@@ -232,6 +232,30 @@ export default function ClientDetailClient({
   const [onboardingUnlocked, setOnboardingUnlocked] = useState<boolean>((client as any).onboarding_unlocked ?? false);
   const [unlocking, setUnlocking] = useState(false);
 
+  // Reset client password
+  const [resetPassword, setResetPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
+
+  async function handleResetPassword() {
+    if (!resetPassword.trim()) { toast.error("Enter a new password."); return; }
+    setResettingPassword(true);
+    try {
+      const res = await fetch("/api/admin/reset-client-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: client.id, newPassword: resetPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error ?? "Failed to reset password."); return; }
+      toast.success("Password updated. Client can now log in.");
+      setResetPassword("");
+    } catch {
+      toast.error("Something went wrong.");
+    } finally {
+      setResettingPassword(false);
+    }
+  }
+
   const router = useRouter();
 
   // Delete client
@@ -2027,6 +2051,29 @@ export default function ClientDetailClient({
                   Unlocked
                 </span>
               )}
+            </div>
+
+            {/* Reset client password */}
+            <div className="rounded-2xl p-5 mb-5" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+              <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}>Reset login password</p>
+              <p className="text-xs mb-3" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>Use this if the client can't log in or needs new credentials.</p>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="New password"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <button
+                  onClick={handleResetPassword}
+                  disabled={resettingPassword}
+                  className="shrink-0 text-sm font-semibold px-4 py-2 rounded-xl"
+                  style={{ background: "var(--ll-taupe)", color: "#fff", fontFamily: "var(--font-body)", opacity: resettingPassword ? 0.6 : 1, cursor: resettingPassword ? "not-allowed" : "pointer" }}
+                >
+                  {resettingPassword ? "Saving…" : "Set password"}
+                </button>
+              </div>
             </div>
 
             <div className="rounded-2xl p-5 mb-5" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>

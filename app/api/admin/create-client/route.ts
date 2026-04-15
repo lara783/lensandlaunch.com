@@ -31,6 +31,13 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  // Belt-and-suspenders: explicitly confirm the email in case the flag above didn't take
+  if (newUser.user) {
+    await serviceClient.auth.admin.updateUserById(newUser.user.id, {
+      email_confirm: true,
+    });
+  }
+
   // Manually create the profile (trigger may not exist)
   if (newUser.user) {
     await serviceClient
