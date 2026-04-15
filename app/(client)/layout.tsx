@@ -15,7 +15,7 @@ export default async function ClientLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role, analytics_enabled, onboarding_complete, onboarding_unlocked")
+    .select("full_name, role, analytics_enabled, onboarding_complete, onboarding_unlocked, proposals_enabled")
     .eq("id", user.id)
     .single();
 
@@ -30,6 +30,7 @@ export default async function ClientLayout({
       role="client"
       userName={profile?.full_name ?? user.email ?? "Client"}
       analyticsEnabled={(profile as any)?.analytics_enabled ?? false}
+      proposalsEnabled={(profile as any)?.proposals_enabled ?? true}
       onboardingComplete={onboardingComplete}
       onboardingUnlocked={onboardingUnlocked}
     >

@@ -7,25 +7,27 @@ interface Props {
   role: "client" | "admin" | "team";
   userName: string;
   analyticsEnabled?: boolean;
+  proposalsEnabled?: boolean;
   onboardingComplete?: boolean;
   onboardingUnlocked?: boolean;
   children: React.ReactNode;
 }
 
-export function PortalLayout({ role, userName, analyticsEnabled, onboardingComplete, onboardingUnlocked, children }: Props) {
+export function PortalLayout({ role, userName, analyticsEnabled, proposalsEnabled = true, onboardingComplete, onboardingUnlocked, children }: Props) {
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--background)" }}>
       <Sidebar
         role={role}
         userName={userName}
         analyticsEnabled={analyticsEnabled}
+        proposalsEnabled={proposalsEnabled}
         onboardingComplete={onboardingComplete}
         onboardingUnlocked={onboardingUnlocked}
       />
       <main className="flex-1 md:ml-16 overflow-y-auto pb-16 md:pb-0 w-full min-w-0">
         {children}
       </main>
-      <BottomNav role={role} onboardingUnlocked={onboardingUnlocked} />
+      <BottomNav role={role} onboardingUnlocked={onboardingUnlocked} proposalsEnabled={proposalsEnabled} />
     </div>
   );
 }

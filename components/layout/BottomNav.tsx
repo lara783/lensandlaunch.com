@@ -44,9 +44,10 @@ const preAcceptanceNav = [
   { label: "Book",     href: "/schedule",  icon: <CalendarCheck size={20} /> },
 ];
 
-export function BottomNav({ role, onboardingUnlocked = true }: { role: "client" | "admin" | "team"; onboardingUnlocked?: boolean }) {
+export function BottomNav({ role, onboardingUnlocked = true, proposalsEnabled = true }: { role: "client" | "admin" | "team"; onboardingUnlocked?: boolean; proposalsEnabled?: boolean }) {
   const pathname = usePathname();
-  const nav = role === "admin" ? adminNav : role === "team" ? teamNav : (!onboardingUnlocked ? preAcceptanceNav : clientNav);
+  const lockedNav = proposalsEnabled ? preAcceptanceNav : preAcceptanceNav.filter((item) => item.href !== "/proposals");
+  const nav = role === "admin" ? adminNav : role === "team" ? teamNav : (!onboardingUnlocked ? lockedNav : clientNav);
 
   return (
     <nav

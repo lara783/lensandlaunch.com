@@ -218,6 +218,20 @@ export default function ClientDetailClient({
   const [analyticsEnabled, setAnalyticsEnabled] = useState<boolean>((client as any).analytics_enabled ?? false);
   const [togglingAnalytics, setTogglingAnalytics] = useState(false);
 
+  // Proposals visibility toggle
+  const [proposalsEnabled, setProposalsEnabled] = useState<boolean>((client as any).proposals_enabled ?? true);
+  const [togglingProposals, setTogglingProposals] = useState(false);
+
+  async function toggleProposalsAccess() {
+    setTogglingProposals(true);
+    const next = !proposalsEnabled;
+    setProposalsEnabled(next);
+    const { error } = await supabase.from("profiles").update({ proposals_enabled: next } as any).eq("id", client.id);
+    if (error) { setProposalsEnabled(!next); toast.error("Failed to update proposals visibility."); }
+    else toast.success(next ? "Proposals shown to client." : "Proposals hidden from client.");
+    setTogglingProposals(false);
+  }
+
   async function toggleAnalyticsAccess() {
     setTogglingAnalytics(true);
     const next = !analyticsEnabled;
@@ -2051,6 +2065,28 @@ export default function ClientDetailClient({
                   Unlocked
                 </span>
               )}
+            </div>
+
+            {/* Proposals visibility toggle */}
+            <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-xl" style={{ background: "var(--secondary)", border: "1px solid var(--border)" }}>
+              <button
+                type="button"
+                onClick={toggleProposalsAccess}
+                disabled={togglingProposals}
+                className="relative w-9 h-5 rounded-full transition-colors shrink-0"
+                style={{ background: proposalsEnabled ? "var(--ll-taupe)" : "var(--ll-neutral, #d9d9d9)" }}
+              >
+                <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow block transition-transform"
+                  style={{ transform: proposalsEnabled ? "translateX(18px)" : "translateX(2px)" }} />
+              </button>
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "var(--foreground)", fontFamily: "var(--font-body)" }}>
+                  Proposals tab: <span style={{ color: proposalsEnabled ? "var(--ll-taupe)" : "var(--ll-grey)" }}>{proposalsEnabled ? "Visible" : "Hidden"}</span>
+                </p>
+                <p className="text-[11px]" style={{ color: "var(--ll-grey)", fontFamily: "var(--font-body)" }}>
+                  {proposalsEnabled ? "Client can see the Proposals section." : "Proposals is hidden from the client's portal."}
+                </p>
+              </div>
             </div>
 
             {/* Reset client password */}

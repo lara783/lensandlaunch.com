@@ -69,20 +69,24 @@ interface SidebarProps {
   role: "client" | "admin" | "team";
   userName: string;
   analyticsEnabled?: boolean;
+  proposalsEnabled?: boolean;
   onboardingComplete?: boolean;
   onboardingUnlocked?: boolean;
 }
 
-export function Sidebar({ role, userName, analyticsEnabled, onboardingComplete, onboardingUnlocked = true }: SidebarProps) {
+export function Sidebar({ role, userName, analyticsEnabled, proposalsEnabled = true, onboardingComplete, onboardingUnlocked = true }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const baseClientNav = (() => {
-    // Locked until Lara manually unlocks onboarding — only show Proposals + Book a Call
+    // Locked until Lara manually unlocks onboarding — only show Proposals (if enabled) + Book a Call
     if (!onboardingUnlocked) {
-      return clientNav.filter((item) => item.href === "/proposals" || item.href === "/schedule");
+      return clientNav.filter((item) => (item.href === "/proposals" && proposalsEnabled) || item.href === "/schedule");
     }
     let nav = [...clientNav];
+    if (!proposalsEnabled) {
+      nav = nav.filter((item) => item.href !== "/proposals");
+    }
     if (analyticsEnabled) {
       nav = [...nav.slice(0, 4), { label: "Analytics", href: "/analytics", icon: <BarChart2 size={18} /> }, ...nav.slice(4)];
     }
