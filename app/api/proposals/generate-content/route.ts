@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { BRAND_VOICE_SYSTEM } from "@/lib/brandVoice";
 
 interface SelectedService {
   category: string;
@@ -224,6 +225,7 @@ Write warm, confident, professional proposal copy for this section only. 2–4 s
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
+      system: BRAND_VOICE_SYSTEM,
       messages: [{ role: "user", content: prompt }],
     });
 

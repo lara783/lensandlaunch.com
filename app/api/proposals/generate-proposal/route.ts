@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { BRAND_VOICE_SYSTEM } from "@/lib/brandVoice";
 
 interface SelectedService {
   category: string;
@@ -96,6 +97,7 @@ Return ONLY valid JSON — no other text, no markdown fences, no explanation. Us
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4096,
+      system: BRAND_VOICE_SYSTEM,
       messages: [{ role: "user", content: prompt }],
     });
 
