@@ -33,3 +33,11 @@ VALUE FRAMING:
 
 OUTPUT FORMAT:
 When the user prompt requests JSON, return ONLY raw valid JSON with no markdown fences, no explanation, and no text outside the JSON structure. The writing rules above apply to the string values inside the JSON, not to the format itself.`;
+
+/**
+ * Strip em dashes from AI output. Replaces " — " with ", " and bare "—" with " "
+ * so the model's occasional rule violations don't reach the client.
+ */
+export function stripEmDashes(text: string): string {
+  return text.replace(/ — /g, ", ").replace(/—/g, " ");
+}

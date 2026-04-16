@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { BRAND_VOICE_SYSTEM } from "@/lib/brandVoice";
+import { BRAND_VOICE_SYSTEM, stripEmDashes } from "@/lib/brandVoice";
 
 interface SelectedService {
   category: string;
@@ -101,7 +101,7 @@ Return ONLY valid JSON — no other text, no markdown fences, no explanation. Us
       messages: [{ role: "user", content: prompt }],
     });
 
-    const raw = message.content[0].type === "text" ? message.content[0].text : "";
+    const raw = message.content[0].type === "text" ? stripEmDashes(message.content[0].text) : "";
 
     // Strip any accidental markdown fences
     const cleaned = raw.replace(/^```(?:json)?\n?/m, "").replace(/\n?```$/m, "").trim();

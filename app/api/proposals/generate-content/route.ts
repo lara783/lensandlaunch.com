@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { BRAND_VOICE_SYSTEM } from "@/lib/brandVoice";
+import { BRAND_VOICE_SYSTEM, stripEmDashes } from "@/lib/brandVoice";
 
 interface SelectedService {
   category: string;
@@ -229,7 +229,7 @@ Write warm, confident, professional proposal copy for this section only. 2–4 s
       messages: [{ role: "user", content: prompt }],
     });
 
-    const content = message.content[0].type === "text" ? message.content[0].text : "";
+    const content = message.content[0].type === "text" ? stripEmDashes(message.content[0].text) : "";
     return NextResponse.json({ content });
   } catch (err: any) {
     console.error("Anthropic API error:", err);
