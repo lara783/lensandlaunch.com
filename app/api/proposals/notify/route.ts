@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { error } = await resend.emails.send({
-    from: "Lara — Lens & Launch <lara@lensandlaunch.com>",
+    from: "Lara, Lens & Launch <lara@lensandlaunch.com>",
     to: clientEmail,
     subject: `Your proposal is ready — ${proposalTitle}`,
     html: `
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
                 Hi ${firstName},
               </h1>
               <p style="margin:0 0 24px;font-size:15px;color:#727070;line-height:1.6;">
-                Lara has sent you a proposal. Take a look when you're ready — you can review it, ask questions, and sign directly in your client portal.
+                Lara has put together a proposal for you. Take a look when you're ready and let her know what you think.
               </p>
 
               <!-- Proposal title pill -->
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
                   <td>
                     <a href="${proposalLink}"
                       style="display:inline-block;background:#010101;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:10px;font-size:14px;font-weight:600;letter-spacing:0.3px;">
-                      View &amp; Sign Proposal →
+                      View Proposal →
                     </a>
                   </td>
                 </tr>
