@@ -28,6 +28,11 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
+  // Webhook routes — authenticated by their own mechanism, not Supabase session
+  if (path.startsWith("/api/webhooks/")) {
+    return supabaseResponse;
+  }
+
   // Public routes
   if (path === "/login" || path === "/") {
     if (user) {
